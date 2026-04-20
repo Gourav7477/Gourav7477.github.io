@@ -9,8 +9,9 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#0a0a0a;--surface:#111111;--border:rgba(255,255,255,0.08);
-  --accent:#ff4d00;--accent2:#ff7a40;--text:#f5f5f0;--muted:#666660;--card:#161616;
+  --bg:#0a0a0a;--surface:#0e0e0e;--border:rgba(255,255,255,0.07);
+  --accent:#ff4d00;--accent2:#ff7a40;--text:#f5f5f0;--muted:#666660;--card:#111111;
+  --orb1:#ff4d00;--orb2:#ff8c00;--orb3:#ffcc00;
 }
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;overflow-x:hidden;}
@@ -135,6 +136,103 @@ section{padding:7rem 4rem;position:relative;}
 footer{padding:2.5rem 4rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
 footer p{font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
 .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.1em;color:rgba(255,255,255,.15);}
+
+
+/* ══════════════════════════════════════════════
+   AMBIENT GRADIENT / ORB SYSTEM
+   ══════════════════════════════════════════════ */
+.orb-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+
+/* Base orb — soft radial blob */
+.orb{
+  position:absolute;border-radius:50%;
+  filter:blur(var(--blur,120px));
+  opacity:var(--op,.5);
+  animation:orbDrift var(--dur,20s) ease-in-out infinite alternate;
+  will-change:transform;
+}
+@keyframes orbDrift{
+  0%  {transform:translate(0,0) scale(1);}
+  25% {transform:translate(var(--tx1,25px),var(--ty1,-18px)) scale(1.04);}
+  50% {transform:translate(var(--tx2,-18px),var(--ty2,28px)) scale(.96);}
+  75% {transform:translate(var(--tx3,12px),var(--ty3,-8px)) scale(1.02);}
+  100%{transform:translate(var(--tx4,-10px),var(--ty4,15px)) scale(1.05);}
+}
+
+/* Mesh gradient layer — Image 2 large sweep */
+.orb-mesh{
+  position:absolute;
+  border-radius:50%;
+  opacity:var(--op,.28);
+  filter:blur(var(--blur,80px));
+  animation:orbDrift var(--dur,26s) ease-in-out infinite alternate-reverse;
+  will-change:transform;
+}
+
+/* Rising-sun horizon band — Image 2 style */
+.orb-horizon{
+  position:absolute;
+  left:-20%;width:140%;
+  border-radius:50%;
+  opacity:var(--op,.22);
+  filter:blur(var(--blur,90px));
+  animation:horizonPulse var(--dur,30s) ease-in-out infinite alternate;
+}
+@keyframes horizonPulse{
+  0%  {transform:scaleX(1) translateY(0);}
+  50% {transform:scaleX(1.06) translateY(-12px);}
+  100%{transform:scaleX(.97) translateY(8px);}
+}
+
+/* Lens flare / highlight dot — Image 1 bubble style */
+.orb-flare{
+  position:absolute;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,220,150,.9) 0%,rgba(255,140,0,.4) 40%,transparent 70%);
+  filter:blur(var(--blur,4px));
+  opacity:var(--op,.7);
+  animation:flarePulse var(--dur,8s) ease-in-out infinite alternate;
+}
+@keyframes flarePulse{
+  0%  {opacity:var(--op,.7);transform:scale(1);}
+  50% {opacity:calc(var(--op,.7)*.5);transform:scale(.8);}
+  100%{opacity:var(--op,.7);transform:scale(1.1);}
+}
+
+/* Card glow — Image 1 icon card style */
+.orb-card-glow{
+  position:absolute;
+  border-radius:24px;
+  opacity:var(--op,.35);
+  filter:blur(var(--blur,60px));
+  animation:orbDrift var(--dur,14s) ease-in-out infinite alternate;
+}
+
+/* Curved sweep stroke — Image 1 arc style */
+.orb-arc{
+  position:absolute;
+  border-radius:50%;
+  border:none;
+  opacity:var(--op,.15);
+  filter:blur(var(--blur,40px));
+  animation:orbDrift var(--dur,22s) ease-in-out infinite alternate-reverse;
+}
+
+/* Noise grain overlay on each section */
+.orb-bg::after{
+  content:'';
+  position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:.025;
+  mix-blend-mode:overlay;
+  pointer-events:none;
+}
+
+/* z-index layering */
+#hero .orb-bg{z-index:1;}
+.hero-left,.hero-right{z-index:2;}
+section{position:relative;}
+section > *:not(.orb-bg){position:relative;z-index:1;}
 
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
 .reveal.visible{opacity:1;transform:translateY(0);}
@@ -262,6 +360,19 @@ footer p{font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
 
 <!-- HERO -->
 <section id="hero">
+<div class="orb-bg">
+  <!-- Big ambient sweep — Image 2 "About" style full-bleed mesh -->
+  <div class="orb-mesh" style="width:110%;height:70%;background:radial-gradient(ellipse at 60% 50%,#ff6600 0%,#cc3300 35%,#550000 65%,transparent 85%);--blur:0px;--op:.32;--dur:34s;top:-10%;left:-5%;border-radius:0 0 60% 60%;filter:blur(60px);"></div>
+  <!-- Secondary amber cloud -->
+  <div class="orb" style="width:650px;height:650px;background:radial-gradient(circle,#ffaa00 0%,#ff5500 35%,#aa1100 60%,transparent 78%);--blur:130px;--op:.38;--dur:24s;--tx1:-50px;--ty1:35px;--tx2:30px;--ty2:-40px;--tx3:-15px;--ty3:25px;--tx4:40px;--ty4:-15px;bottom:-180px;left:-80px;"></div>
+  <!-- Right-side warm glow -->
+  <div class="orb" style="width:420px;height:420px;background:radial-gradient(circle,#ff8800 0%,#ee4400 50%,transparent 72%);--blur:110px;--op:.22;--dur:28s;--tx1:55px;--ty1:-45px;--tx2:-35px;--ty2:55px;--tx3:20px;--ty3:-20px;--tx4:-30px;--ty4:30px;top:5%;right:8%;"></div>
+  <!-- Lens flare bubble top-left — Image 1 style -->
+  <div class="orb-flare" style="width:18px;height:18px;--blur:2px;--op:.85;--dur:7s;top:22%;left:36%;"></div>
+  <div class="orb-flare" style="width:8px;height:8px;--blur:1px;--op:.6;--dur:11s;top:30%;left:38%;"></div>
+  <!-- Deep dark void center-right -->
+  <div class="orb" style="width:300px;height:300px;background:radial-gradient(circle,#000000 0%,transparent 70%);--blur:80px;--op:.6;--dur:20s;--tx1:20px;--ty1:-10px;--tx2:-15px;--ty2:20px;--tx3:10px;--ty3:-8px;--tx4:-5px;--ty4:12px;top:25%;left:30%;"></div>
+</div>
   <div class="hero-left">
     <div class="hero-tag reveal">Java Developer &middot; Internship @ Pinnacle Labs &middot; DIT University</div>
     <h1 class="hero-name reveal delay-1">
@@ -303,6 +414,16 @@ footer p{font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
 
 <!-- ABOUT -->
 <section id="about">
+<div class="orb-bg">
+  <!-- Full-top warm sweep exactly like Image 2 "About" page -->
+  <div class="orb-mesh" style="width:120%;height:60%;background:radial-gradient(ellipse at 50% 30%,#ff7700 0%,#dd3300 30%,#881100 55%,transparent 80%);--blur:0;--op:.28;--dur:38s;top:-15%;left:-10%;border-radius:0 0 50% 50%;filter:blur(50px);"></div>
+  <!-- Secondary glow orb center -->
+  <div class="orb" style="width:500px;height:500px;background:radial-gradient(circle,#ff9900 0%,#ff4400 40%,transparent 68%);--blur:160px;--op:.2;--dur:22s;--tx1:45px;--ty1:-35px;--tx2:-30px;--ty2:45px;--tx3:20px;--ty3:-15px;--tx4:-15px;--ty4:20px;top:-80px;left:10%;"></div>
+  <!-- Bottom-right isolated glow — Image 2 "Start a project" ball -->  
+  <div class="orb" style="width:280px;height:280px;background:radial-gradient(circle,#ff6600 0%,#cc3300 45%,transparent 70%);--blur:50px;--op:.4;--dur:18s;--tx1:-20px;--ty1:15px;--tx2:18px;--ty2:-20px;--tx3:-8px;--ty3:12px;--tx4:10px;--ty4:-8px;bottom:-60px;right:8%;border:1px solid rgba(255,100,0,.15);box-shadow:0 0 80px rgba(255,80,0,.25);border-radius:50%;filter:none;"></div>
+  <!-- Thin horizon arc -->
+  <div class="orb-arc" style="width:80%;height:200px;background:linear-gradient(to bottom,transparent,rgba(255,80,0,.08),transparent);--blur:30px;--op:.8;--dur:40s;bottom:20%;left:10%;border-radius:50%;"></div>
+</div>
   <div class="about-grid">
     <div class="reveal">
       <p class="sec-eyebrow">01 &mdash; About</p>
@@ -356,6 +477,14 @@ footer p{font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
 
 <!-- EXPERIENCE -->
 <section id="experience">
+<div class="orb-bg">
+  <!-- Deep rising glow from bottom — Image 1 bottom-left card -->
+  <div class="orb-horizon" style="height:300px;background:radial-gradient(ellipse at 50% 100%,#ff4400 0%,#aa1100 40%,transparent 70%);--blur:90px;--op:.18;--dur:28s;bottom:-80px;border-radius:50%;"></div>
+  <!-- Right wall glow — Image 1 right arc card -->
+  <div class="orb-arc" style="width:250px;height:120%;background:radial-gradient(ellipse at 100% 50%,#ff6600 0%,#cc2200 50%,transparent 75%);--blur:80px;--op:.12;--dur:24s;right:-50px;top:-10%;border-radius:50%;"></div>
+  <!-- Subtle warm dot mid-section -->
+  <div class="orb" style="width:200px;height:200px;background:radial-gradient(circle,#ff7700 0%,transparent 70%);--blur:90px;--op:.12;--dur:32s;--tx1:30px;--ty1:-20px;--tx2:-25px;--ty2:30px;--tx3:12px;--ty3:-10px;--tx4:-8px;--ty4:14px;top:40%;left:5%;"></div>
+</div>
   <p class="sec-eyebrow reveal">02 &mdash; Experience</p>
   <h2 class="sec-title reveal delay-1">Where I've<br>Made Impact.</h2>
   <div class="exp-list">
@@ -398,6 +527,18 @@ footer p{font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
 
 <!-- PROJECTS -->
 <section id="projects">
+<div class="orb-bg">
+  <!-- Top-left card spotlight — Image 1 top-left orange card -->
+  <div class="orb-card-glow" style="width:320px;height:320px;background:radial-gradient(circle at 30% 30%,#ffaa00 0%,#ff5500 40%,transparent 70%);--blur:70px;--op:.3;--dur:16s;--tx1:20px;--ty1:-15px;--tx2:-12px;--ty2:20px;--tx3:8px;--ty3:-8px;--tx4:-5px;--ty4:10px;top:-60px;left:-40px;border-radius:32px;"></div>
+  <!-- Center card spot — Image 1 center orange orb on dark -->
+  <div class="orb" style="width:160px;height:160px;background:radial-gradient(circle,#ff8800 0%,#ff4400 50%,transparent 70%);--blur:30px;--op:.45;--dur:12s;--tx1:-15px;--ty1:20px;--tx2:20px;--ty2:-15px;--tx3:-8px;--ty3:10px;--tx4:5px;--ty4:-6px;top:35%;left:47%;"></div>
+  <!-- Lens flare on center card -->
+  <div class="orb-flare" style="width:12px;height:12px;--blur:2px;--op:.9;--dur:6s;top:38%;left:49%;"></div>
+  <!-- Bottom-right large ambient -->
+  <div class="orb" style="width:500px;height:500px;background:radial-gradient(circle,#ff5500 0%,#bb2200 45%,transparent 70%);--blur:160px;--op:.14;--dur:26s;--tx1:-35px;--ty1:25px;--tx2:30px;--ty2:-35px;--tx3:12px;--ty3:15px;--tx4:-20px;--ty4:-10px;bottom:-150px;right:-80px;"></div>
+  <!-- Amber sweep top-right -->
+  <div class="orb-card-glow" style="width:280px;height:280px;background:radial-gradient(circle at 70% 30%,#ffcc00 0%,#ff6600 50%,transparent 75%);--blur:80px;--op:.18;--dur:20s;--tx1:25px;--ty1:-20px;--tx2:-18px;--ty2:25px;--tx3:8px;--ty3:-10px;--tx4:-5px;--ty4:8px;top:-30px;right:10%;border-radius:32px;"></div>
+</div>
   <p class="sec-eyebrow reveal">03 &mdash; Projects</p>
   <h2 class="sec-title reveal delay-1">Things I've<br>Shipped.</h2>
   <div class="projects-grid">
@@ -449,6 +590,16 @@ footer p{font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
 
 <!-- CERTIFICATIONS -->
 <section id="certifications">
+<div class="orb-bg">
+  <!-- Image 1 top-center "glowing ember on black" -->
+  <div class="orb" style="width:380px;height:280px;background:radial-gradient(ellipse at 50% 0%,#ff6600 0%,#cc2200 45%,transparent 75%);--blur:90px;--op:.22;--dur:22s;--tx1:30px;--ty1:-10px;--tx2:-20px;--ty2:30px;--tx3:10px;--ty3:-8px;--tx4:-5px;--ty4:10px;top:-40px;left:30%;"></div>
+  <!-- Image 1 bottom rising glow -->
+  <div class="orb-horizon" style="height:220px;background:radial-gradient(ellipse at 40% 100%,#ff4400 0%,#881100 50%,transparent 75%);--blur:80px;--op:.16;--dur:30s;bottom:-60px;border-radius:50%;"></div>
+  <!-- Side arc — Image 1 right-column vertical stripe -->
+  <div class="orb-arc" style="width:180px;height:90%;background:radial-gradient(ellipse at 100% 50%,rgba(255,80,0,.3) 0%,transparent 70%);--blur:60px;--op:.9;--dur:26s;right:-20px;top:5%;border-radius:50%;"></div>
+  <!-- Small flare dot -->
+  <div class="orb-flare" style="width:10px;height:10px;--blur:1px;--op:.7;--dur:9s;top:15%;right:33%;"></div>
+</div>
   <p class="sec-eyebrow reveal">04 &mdash; Certifications</p>
   <h2 class="sec-title reveal delay-1">Credentials &amp;<br>Achievements.</h2>
   <div class="certs-grid">
@@ -476,6 +627,14 @@ footer p{font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
 
 <!-- EDUCATION -->
 <section id="education">
+<div class="orb-bg">
+  <!-- Left card warm glow — Image 1 top-left style -->
+  <div class="orb-card-glow" style="width:350px;height:350px;background:radial-gradient(circle at 20% 20%,#ff8800 0%,#ff3300 45%,transparent 72%);--blur:100px;--op:.2;--dur:18s;--tx1:-20px;--ty1:15px;--tx2:18px;--ty2:-20px;--tx3:8px;--ty3:10px;--tx4:-5px;--ty4:-6px;top:-80px;left:-60px;border-radius:32px;"></div>
+  <!-- Right card bottom glow -->
+  <div class="orb-card-glow" style="width:300px;height:300px;background:radial-gradient(circle at 80% 80%,#ff5500 0%,#aa1100 50%,transparent 75%);--blur:90px;--op:.16;--dur:24s;--tx1:20px;--ty1:-15px;--tx2:-15px;--ty2:20px;--tx3:8px;--ty3:-8px;--tx4:-5px;--ty4:10px;bottom:-60px;right:-40px;border-radius:32px;"></div>
+  <!-- Subtle middle sweep -->
+  <div class="orb" style="width:400px;height:200px;background:radial-gradient(ellipse,rgba(255,80,0,.12) 0%,transparent 70%);--blur:70px;--op:.8;--dur:35s;--tx1:30px;--ty1:-10px;--tx2:-20px;--ty2:25px;--tx3:8px;--ty3:-6px;--tx4:-4px;--ty4:8px;top:40%;left:20%;"></div>
+</div>
   <p class="sec-eyebrow reveal">05 &mdash; Education</p>
   <h2 class="sec-title reveal delay-1">Academic<br>Background.</h2>
   <div class="edu-grid">
@@ -508,6 +667,16 @@ footer p{font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
 
 <!-- CONTACT -->
 <section id="contact">
+<div class="orb-bg">
+  <!-- Top left warm mesh sweep -->
+  <div class="orb-mesh" style="width:90%;height:55%;background:radial-gradient(ellipse at 30% 50%,#ff5500 0%,#aa2200 40%,transparent 75%);--blur:0;--op:.2;--dur:36s;top:-20%;left:-10%;border-radius:50%;filter:blur(70px);"></div>
+  <!-- Image 2 "Start a project" isolated glowing sphere bottom-right -->
+  <div class="orb" style="width:220px;height:220px;background:radial-gradient(circle,#ff9900 0%,#ff4400 40%,#aa1100 65%,transparent 80%);--blur:20px;--op:.65;--dur:15s;--tx1:-12px;--ty1:10px;--tx2:10px;--ty2:-12px;--tx3:5px;--ty3:6px;--tx4:-4px;--ty4:-4px;bottom:12%;right:10%;box-shadow:0 0 100px rgba(255,80,0,.3),0 0 200px rgba(180,40,0,.2);border-radius:50%;filter:none;"></div>
+  <!-- Flare on the orb -->
+  <div class="orb-flare" style="width:22px;height:22px;--blur:3px;--op:.9;--dur:8s;bottom:calc(12% + 60px);right:calc(10% + 60px);"></div>
+  <!-- Deep amber cloud left -->
+  <div class="orb" style="width:500px;height:500px;background:radial-gradient(circle,#ff6600 0%,#cc2200 50%,transparent 70%);--blur:180px;--op:.16;--dur:28s;--tx1:40px;--ty1:-30px;--tx2:-30px;--ty2:40px;--tx3:12px;--ty3:-10px;--tx4:-8px;--ty4:12px;top:-100px;left:-80px;"></div>
+</div>
   <div class="contact-grid">
     <div class="reveal">
       <p class="sec-eyebrow">06 &mdash; Contact</p>
